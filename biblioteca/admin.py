@@ -19,11 +19,18 @@ class CopiaInline(admin.TabularInline):
 
 @admin.register(Libro)
 class LibroAdmin(admin.ModelAdmin):
-    list_display=("isbn", "titulo", "idioma", "anio_publicacion", "categoria")
-    search_fields=("titulo", "isbn")
+    list_display=("isbn", "titulo", "idioma", "anio_publicacion", "categoria", "ver_autores")
+    search_fields=("titulo", "isbn", "autores__nombre")
     list_filter=("categoria", "idioma")
     inlines = [CopiaInline]
     list_select_related=("categoria",)
+
+    @admin.display(description="Autores")
+    def ver_autores(self, obj):
+        return ", ".join(a.nombre for a in obj.autores.all())
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related("autores")
 
 @admin.register(Copia)
 class CopiaAdmin(admin.ModelAdmin):
